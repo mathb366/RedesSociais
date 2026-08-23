@@ -1,5 +1,12 @@
 import sys
 import csv
+import networkx as nx
+
+def create_graph(edges):
+    G = nx.Graph()
+    G.add_edges_from(edges)
+
+    return G
 
 def read_input_file(file_path):
     """Função utilizada para ler o arquivo csv de entrada e retornar as arestas obtidas."""
@@ -19,6 +26,11 @@ def read_input_file(file_path):
 
     return edges
 
+def create_graph(edges):
+    G = nx.Graph()
+    G.add_edges_from(edges)
+
+    return G
 
 def run():
     # Verifica se os argumentos foram passados corretamente:
@@ -30,6 +42,10 @@ def run():
     file_path = sys.argv[1]
     edges = read_input_file(file_path)
     print(edges)
+
+    G = create_graph(edges)
+    print(G.nodes)
+    print(G.edges)
 
 if __name__ == "__main__":
     run()
