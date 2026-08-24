@@ -112,36 +112,44 @@ def identify_communities(dict_labels):
 
     return communities
 
-def display_communities(G, dict_labels, title="Comunidades Detectadas"):
-    """Função utilizada para visualizar as comunidades do grafo."""
-
-    labels_list = [dict_labels.get(i, i) for i in range(G.number_of_nodes())]
-    communities = identify_communities(dict_labels)
-    num_communities = len(communities)
+def visualizar_comunidades(grafo, dict_rotulos, titulo="Comunidades Detectadas"):
+    #Visualiza o grafo com as comunidades coloridas.
+    comunidades = identify_communities(dict_rotulos)
+    num_comunidades = len(comunidades)
     
-    # Gera cores distintas para cada comunidade:
-    colors = plt.cm.tab10(np.linspace(0, 1, num_communities))
-    color_by_community = {}
-    for idx, (label, _) in enumerate(communities.items()):
-        color_by_community[label] = colors[idx]
+    # Gera cores distintas para cada comunidade
+    cores = plt.cm.tab10(np.linspace(0, 1, num_comunidades))
+    cor_por_comunidade = {}
+    for idx, (rotulo, _) in enumerate(comunidades.items()):
+        cor_por_comunidade[rotulo] = cores[idx]
     
-    # Cores para cada vértice
-    nodes_colors = [color_by_community[label] for label in labels_list]
-    pos = nx.spring_layout(G, seed=42)
+    # Cores para cada vértice - CORREÇÃO AQUI
+    cores_vertices = []
+    for node in grafo.nodes():
+        rotulo = dict_rotulos.get(node)
+        # Se o nó não tiver rótulo, atribui um padrão (por exemplo, -1)
+        if rotulo is None:
+            rotulo = -1
+            # Se -1 não estiver no dicionário de cores, adiciona uma cor cinza
+            if rotulo not in cor_por_comunidade:
+                cor_por_comunidade[rotulo] = (0.5, 0.5, 0.5)  # Cinza
+        cores_vertices.append(cor_por_comunidade[rotulo])
+    
+    pos = nx.spring_layout(grafo, seed=42)
     plt.figure(figsize=(12, 8))
     
     # Desenha o grafo
-    nx.draw(G, pos, node_color=nodes_colors, with_labels=True, node_size=500, font_size=10, font_weight='bold', edge_color='gray', alpha=0.7)
+    nx.draw(grafo, pos, node_color=cores_vertices, with_labels=True, node_size=500, font_size=10, font_weight='bold', edge_color='gray', alpha=0.7)
     
     # Adiciona legenda
     legend_elements = []
-    for label, node in communities.items():
+    for rotulo, vertices in comunidades.items():
         legend_elements.append(
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color_by_community[label], markersize=10, label=f'Comunidade {label}'))
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cor_por_comunidade[rotulo], markersize=10, label=f'Comunidade {rotulo}'))
     
     # Posiciona a legenda fora do gráfico
     plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5))
-    plt.title(title)
+    plt.title(titulo)
     plt.subplots_adjust(right=0.8)
     plt.show()
 
@@ -168,7 +176,7 @@ def run():
 
     print("FIM DO ALGORITMO")
     print(f"Rótulos: {labels}")
-    display_communities(G, labels, title=f"Comunidades detectadas")
+    visualizar_comunidades(G, labels, titulo=f"Comunidades detectadas")
 
 if __name__ == "__main__":
     run()
