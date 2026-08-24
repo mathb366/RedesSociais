@@ -42,3 +42,6 @@ conda activate venv
 ```bash
 conda deactivate
 ```
+
+### Imagens da plotagem
+![alt text](image.png)
