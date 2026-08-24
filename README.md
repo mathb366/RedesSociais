@@ -1,4 +1,4 @@
-# Detecção de Comunidades em Redes
+# 🌐 Detecção de Comunidades em Redes
 
 **Nomes:** Arthur Vieira Silva e Matheus Barbosa Brandão
 
@@ -46,6 +46,12 @@ conda activate venv
 conda deactivate
 ```
 
+### Execução
+
+```bash
+python main.py <caminho_para_o_arquivo_de_entrada.csv>
+```
+
 ### 📊 Relatório dos Testes
 
 #### **rede1_duas_comunidades.csv**:
@@ -76,5 +82,5 @@ conda deactivate
 
 - Inicialmente, pensamos que os rótulos iniciais dos vértices seriam atribuídos de 0 até um valor fixo K para que não houvesse empate. No entanto, após vermos que a função para definir a moda dos vértices considera empate aleatório, os rótulos iniciais foram definidos como os índices dos vértices;
 - Tivemos dificuldade em saber quando utilizar listas ou alguns métodos do numpy, principalmente, para manipular os rótulos;
-- Além disso, fizemos a leitura dos arquivos csv de entrada considerando que não terão cabeçalhos, para que não seja necessário ignorar a primeira linha do arquivo.
-- Também tivemos um dificuldade em como acessar um rótulo no dicionário para plotar o grafo do arquivo zachary.csv, no qual inicialmente estávamos acessando rótulos inexistentes.
+- Além disso, fizemos a leitura dos arquivos csv de entrada considerando que não terão cabeçalhos, para que não seja necessário ignorar a primeira linha do arquivo;
+- Também tivemos uma dificuldade em como acessar um rótulo no dicionário para plotar o grafo do arquivo zachary.csv, no qual inicialmente estávamos acessando rótulos inexistentes.
