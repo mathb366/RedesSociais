@@ -29,7 +29,7 @@ def read_input_file(file_path):
     return edges
 
 def add_nodes_label(G):
-    """Função utilizada para adicionar os rótulos nos vértices."""
+    """Função utilizada para adicionar os rótulos iniciais aos vértices."""
 
     for node in G.nodes:
         G.nodes[node]['label'] = node
@@ -52,8 +52,7 @@ def calculate_mode_with_random_draw(neighbors_labels):
     return random.choice(most_frequent)
 
 def label_propagation(G, MAX_ITERATIONS):
-    """
-    Função utilizada para simular o algoritmo Label Propagation."""
+    """Função utilizada para simular o algoritmo Label Propagation."""
 
     N = G.number_of_nodes()
     add_nodes_label(G)
@@ -61,7 +60,7 @@ def label_propagation(G, MAX_ITERATIONS):
     iteration = 0
     changed = True
 
-    nodes_to_visit = np.array(G.nodes)
+    nodes_to_visit = list(G.nodes)
     print(nodes_to_visit)
     while iteration < MAX_ITERATIONS and changed:
         changed = False
@@ -89,8 +88,8 @@ def label_propagation(G, MAX_ITERATIONS):
 
         iteration += 1
 
-    dict_labels = {node: G.nodes[node]['label'] for node in G.nodes}
-    return dict_labels
+    return {node: G.nodes[node]['label'] for node in G.nodes}
+
 
 def create_graph(edges):
     """Função utilizada para criar o Grafo a partir das arestas obtidas."""
@@ -106,51 +105,36 @@ def identify_communities(dict_labels):
     # Agrupa os vértices por comunidade baseado nos rótulos:
     communities = {}
     for node, label in dict_labels.items():
-        if node not in communities:
+        if label not in communities:
             communities[label] = []
         communities[label].append(node)
 
     return communities
 
-def visualizar_comunidades(grafo, dict_rotulos, titulo="Comunidades Detectadas"):
-    #Visualiza o grafo com as comunidades coloridas.
-    comunidades = identify_communities(dict_rotulos)
-    num_comunidades = len(comunidades)
+def display_communities(G, dict_labels, title="Comunidades Detectadas"):
+    """Função utilizada para visualizar as comunidades do grafo."""
+
+    communities = identify_communities(dict_labels)
+    num_communities = len(communities)
     
-    # Gera cores distintas para cada comunidade
-    cores = plt.cm.tab10(np.linspace(0, 1, num_comunidades))
-    cor_por_comunidade = {}
-    for idx, (rotulo, _) in enumerate(comunidades.items()):
-        cor_por_comunidade[rotulo] = cores[idx]
+    colors = plt.cm.tab10(np.linspace(0, 1, max(num_communities, 1)))
+    color_by_community = {label: colors[i] for i, label in enumerate(communities.keys())}
     
-    # Cores para cada vértice
-    cores_vertices = []
-    for node in grafo.nodes():
-        rotulo = dict_rotulos.get(node)
-        # Se o nó não tiver rótulo, atribui um padrão (por exemplo, -1)
-        if rotulo is None:
-            rotulo = -1
-            # Se -1 não estiver no dicionário de cores, adiciona uma cor cinza
-            if rotulo not in cor_por_comunidade:
-                cor_por_comunidade[rotulo] = (0.5, 0.5, 0.5)  # Cinza
-        cores_vertices.append(cor_por_comunidade[rotulo])
+    nodes_colors = [color_by_community[dict_labels[node]] for node in G.nodes()]
     
-    pos = nx.spring_layout(grafo, seed=42)
-    plt.figure(figsize=(12, 8))
+    pos = nx.spring_layout(G, seed=42)
+    plt.figure(figsize=(10, 6))
     
-    # Desenha o grafo
-    nx.draw(grafo, pos, node_color=cores_vertices, with_labels=True, node_size=500, font_size=10, font_weight='bold', edge_color='gray', alpha=0.7)
+    nx.draw(G, pos, node_color=nodes_colors, with_labels=True, node_size=600, font_weight='bold', edge_color='gray')
     
-    # Adiciona legenda
-    legend_elements = []
-    for rotulo, vertices in comunidades.items():
-        legend_elements.append(
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cor_por_comunidade[rotulo], markersize=10, label=f'Comunidade {rotulo}'))
+    legend_elements = [
+        plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color_by_community[label], markersize=10, label=f'Comunidade {label}')
+        for label in communities.keys()
+    ]
     
-    # Posiciona a legenda fora do gráfico
     plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5))
-    plt.title(titulo)
-    plt.subplots_adjust(right=0.8)
+    plt.title(title)
+    plt.subplots_adjust(right=0.75)
     plt.show()
 
 def run():
@@ -176,7 +160,7 @@ def run():
 
     print("FIM DO ALGORITMO")
     print(f"Rótulos: {labels}")
-    visualizar_comunidades(G, labels, titulo=f"Comunidades detectadas")
+    display_communities(G, labels, title=f"Comunidades detectadas")
 
 if __name__ == "__main__":
     run()
