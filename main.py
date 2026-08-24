@@ -6,12 +6,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from collections import Counter
 
-# Constantes utilizadas:
-K = 10
-MAX_ITERATIONS = 100
 
 def read_input_file(file_path):
     """Função utilizada para ler o arquivo csv de entrada e retornar as arestas obtidas."""
+
     edges = []
     try:
         with open(file_path, 'r', newline='') as f:
@@ -30,12 +28,16 @@ def read_input_file(file_path):
 
     return edges
 
-def add_nodes_label(G, labels):
+def add_nodes_label(G):
+    """Função utilizada para adicionar os rótulos nos vértices."""
+
     for node in G.nodes:
-        G.nodes[node]['label'] = random.choice(labels)
+        G.nodes[node]['label'] = node
         print(f"Nó: {node}, Rótulo: {G.nodes[node]['label']}")
 
 def calculate_mode_with_random_draw(neighbors_labels):
+    """Função utilizada para calcular a moda com empate aleatório."""
+
     if not neighbors_labels:
         return None
     
@@ -49,13 +51,16 @@ def calculate_mode_with_random_draw(neighbors_labels):
     # Em caso de empate, escolhe aleatoriamente
     return random.choice(most_frequent)
 
-def label_propagation(G=nx.Graph()):
+def label_propagation(G, MAX_ITERATIONS):
+    """
+    Função utilizada para simular o algoritmo Label Propagation."""
+
     N = G.number_of_nodes()
-    labels = np.arange(K)
-    print(f"Rótulos: {labels}")
-    add_nodes_label(G, labels)
+    add_nodes_label(G)
+
     iteration = 0
     changed = True
+
     nodes_to_visit = np.array(G.nodes)
     print(nodes_to_visit)
     while iteration < MAX_ITERATIONS and changed:
@@ -81,58 +86,71 @@ def label_propagation(G=nx.Graph()):
                     G.nodes[node]['label'] = novo_rotulo
                     changed = True
                     print(f"Nó {node} mudou para rótulo: {novo_rotulo}")
+
         iteration += 1
-    dict_rotulos = {node: G.nodes[node]['label'] for node in G.nodes}
-    visualizar_comunidades(G, dict_rotulos, titulo=f"Comunidades detectadas após {iteration} iterações")
+
+    dict_labels = {node: G.nodes[node]['label'] for node in G.nodes}
+    return dict_labels
 
 def create_graph(edges):
+    """Função utilizada para criar o Grafo a partir das arestas obtidas."""
+
     G = nx.Graph()
     G.add_edges_from(edges)
 
     return G
 
-def identificar_comunidades(dict_rotulos):
-    #Agrupa os vértices por comunidade baseado nos rótulos.
-    comunidades = {}
-    for vertice, rotulo in dict_rotulos.items():
-        if rotulo not in comunidades:
-            comunidades[rotulo] = []
-        comunidades[rotulo].append(vertice)
-    return comunidades
+def identify_communities(dict_labels):
+    """Função utilizada para identificar as comunidades do grafo."""
 
-def visualizar_comunidades(grafo, dict_rotulos, titulo="Comunidades Detectadas"):
-    #Visualiza o grafo com as comunidades coloridas.
-    rotulos_lista = [dict_rotulos.get(i, i) for i in range(grafo.number_of_nodes())]
-    comunidades = identificar_comunidades(dict_rotulos)
-    num_comunidades = len(comunidades)
+    # Agrupa os vértices por comunidade baseado nos rótulos:
+    communities = {}
+    for node, label in dict_labels.items():
+        if node not in communities:
+            communities[label] = []
+        communities[label].append(node)
+
+    return communities
+
+def display_communities(G, dict_labels, title="Comunidades Detectadas"):
+    """Função utilizada para visualizar as comunidades do grafo."""
+
+    labels_list = [dict_labels.get(i, i) for i in range(G.number_of_nodes())]
+    communities = identify_communities(dict_labels)
+    num_communities = len(communities)
     
-    # Gera cores distintas para cada comunidade
-    cores = plt.cm.tab10(np.linspace(0, 1, num_comunidades))
-    cor_por_comunidade = {}
-    for idx, (rotulo, _) in enumerate(comunidades.items()):
-        cor_por_comunidade[rotulo] = cores[idx]
+    # Gera cores distintas para cada comunidade:
+    colors = plt.cm.tab10(np.linspace(0, 1, num_communities))
+    color_by_community = {}
+    for idx, (label, _) in enumerate(communities.items()):
+        color_by_community[label] = colors[idx]
     
     # Cores para cada vértice
-    cores_vertices = [cor_por_comunidade[rotulo] for rotulo in rotulos_lista]
-    pos = nx.spring_layout(grafo, seed=42)
+    nodes_colors = [color_by_community[label] for label in labels_list]
+    pos = nx.spring_layout(G, seed=42)
     plt.figure(figsize=(12, 8))
     
     # Desenha o grafo
-    nx.draw(grafo, pos, node_color=cores_vertices, with_labels=True, node_size=500, font_size=10, font_weight='bold', edge_color='gray', alpha=0.7)
+    nx.draw(G, pos, node_color=nodes_colors, with_labels=True, node_size=500, font_size=10, font_weight='bold', edge_color='gray', alpha=0.7)
     
     # Adiciona legenda
     legend_elements = []
-    for rotulo, vertices in comunidades.items():
+    for label, node in communities.items():
         legend_elements.append(
-            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cor_por_comunidade[rotulo], markersize=10, label=f'Comunidade {rotulo}'))
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color_by_community[label], markersize=10, label=f'Comunidade {label}'))
     
     # Posiciona a legenda fora do gráfico
     plt.legend(handles=legend_elements, loc='center left', bbox_to_anchor=(1.02, 0.5))
-    plt.title(titulo)
+    plt.title(title)
     plt.subplots_adjust(right=0.8)
     plt.show()
 
 def run():
+    """
+    Função utilizada para ler o arquivo csv de entrada, criar o grafo, simular
+    o algoritmo e visualizar as comunidades detectadas.
+    """
+
     # Verifica se os argumentos foram passados corretamente:
     if len(sys.argv) < 2:
         print("Argumentos insuficientes!")
@@ -145,7 +163,12 @@ def run():
     G = create_graph(edges)
     print(f"Nós: {G.nodes}")
     print(f"Arestas: {G.edges}")
-    label_propagation(G)
+
+    labels = label_propagation(G, MAX_ITERATIONS=100)
+
+    print("FIM DO ALGORITMO")
+    print(f"Rótulos: {labels}")
+    display_communities(G, labels, title=f"Comunidades detectadas")
 
 if __name__ == "__main__":
     run()
