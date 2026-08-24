@@ -123,7 +123,7 @@ def visualizar_comunidades(grafo, dict_rotulos, titulo="Comunidades Detectadas")
     for idx, (rotulo, _) in enumerate(comunidades.items()):
         cor_por_comunidade[rotulo] = cores[idx]
     
-    # Cores para cada vértice - CORREÇÃO AQUI
+    # Cores para cada vértice
     cores_vertices = []
     for node in grafo.nodes():
         rotulo = dict_rotulos.get(node)
